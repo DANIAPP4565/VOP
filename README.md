@@ -48,3 +48,15 @@ La app implementa coeficientes del informe *«Modelo candidato argentino para es
 ## Autoría
 
 Proyecto de investigación de mecánica vascular. Dr. Ricardo Daniel Olano, especialista en Cardiología e Hipertensión Arterial.
+
+## Nuevo módulo · Patrones de rigidez referencial (v2)
+
+El módulo **«Patrones por modelos»** compara cada ePWV estimada (Argentina, Europa sana y Europa factores de riesgo) con los valores de referencia **P50 aproximado, P90 y P95 de Díaz (2018)** para la misma edad y sexo. Las bandas son `<P50`, `P50–<P90`, `P90–<P95` y `≥P95`. **En una ePWV, estar por encima de P90 NO equivale a un percentil de VOP medida ni diagnostica rigidez patológica.** Las bandas de estimación son una comparación aritmética exploratoria con la distribución normativa de VOP cf real; se indican explícitamente como tales en pantalla.
+
+Cuando se introduce **VOP realmente medida**, se presenta su banda normativa correspondiente, las coincidencias o discordancias de las bandas estimadas, el perfil de señal detectada o no detectada y el modelo que presenta menor error absoluto respecto de esa medición. Para evitar la inferencia errónea de equivalencia clínica entre modelos, se informan diferencias exactas en m/s (`Europa – Argentina`) y dispersión máxima entre las tres estimaciones. El margen configurable de amplitud de **1,0 m/s** es **solo descriptivo**, sin validación diagnóstica.
+
+En bases CSV/XLSX se agregan columnas de patrones, gráfico apilado por modelo, distribución de discordancias, diferencias vs edad, tablas por intervalos etarios y tablas cruzadas cuando la base dispone de VOP cf medida. No se suben bases de pacientes a GitHub.
+
+## Estado de validación del módulo de patrones
+
+El nuevo módulo agrega una **categorización comparativa exploratoria**, sin validación clínica propia, realizada sobre coeficientes históricos del trabajo metodológico de octubre 2026. **No equipara VOP medida a ePWV**. Es imprescindible validar clasificación, concordancia y relevancia prospectiva en una cohorte independiente antes de incorporarlo a informes diagnósticos.
