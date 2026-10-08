@@ -2,6 +2,7 @@ import math
 from statistics import NormalDist
 import numpy as np
 from patterns import evaluate_patterns
+from concordance import analyze_case
 
 def sex_code(sex):
     s=str(sex).lower().strip()
@@ -38,6 +39,7 @@ def calculate(age,sex,pas,pad,measured=None):
         'Error_ARG':arg-measured if measured is not None else None,
         'Error_Europa':europe-measured if measured is not None else None}
     out.update(evaluate_patterns(out))
+    out.update(analyze_case(out))
     return out
 
 def metrics(obs,pred):
