@@ -10,12 +10,13 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from engine import calculate, metrics
 from patterns import evaluate_patterns, MODELS, BAND_ORDER
+from concordance_ui import render as render_concordance
 
 st.set_page_config(page_title="VOP ARG | Mecánica Vascular",page_icon="🫀",layout="wide")
 st.title("🫀 VOP ARG · Estimación y validación")
 st.caption("Modelo candidato argentino (2026) · ecuaciones europeas · referencias de Díaz et al. (2018)")
 st.warning("Herramienta de investigación, sin validación externa. No reemplaza la VOP cf medida ni establece diagnósticos.")
-tabs=st.tabs(["🧮 Paciente","📂 Base de datos","🧬 Patrones por modelos","📊 Validación","📚 Metodología"])
+tabs=st.tabs(["🧮 Paciente","📂 Base de datos","🧬 Patrones por modelos","🔬 Rigidez medida y concordancia","📊 Validación","📚 Metodología"])
 def pdf_report(r):
     out=io.BytesIO(); doc=SimpleDocTemplate(out,pagesize=A4); styles=getSampleStyleSheet()
     story=[Paragraph("VOP ARG - Informe exploratorio",styles['Title']),Spacer(1,16),
@@ -185,7 +186,7 @@ with tabs[2]:
                     ct.index.name="VOP medida";ct.columns.name="Modelo estimado"
                     st.dataframe(ct,use_container_width=True)
         st.caption("Ninguna banda de estimación se debe interpretar como diagnóstico. Las discrepancias se computan como Europa menos Argentina.")
-with tabs[3]:
+with tabs[4]:
     st.subheader("Validación con VOP medida")
     if 'batch' not in st.session_state: st.info('Cargue una base con VOP medida en la pestaña anterior.')
     else:
@@ -212,7 +213,7 @@ with tabs[3]:
                 c2.plotly_chart(fig,use_container_width=True)
                 st.plotly_chart(px.scatter(plot,x='Edad',y='Diferencia',title='Sesgo por edad'),use_container_width=True)
             else:st.info('Rango etario sin pares suficientes.')
-with tabs[4]:
+with tabs[5]:
     st.subheader('Fundamento científico y limitaciones')
     st.latex(r'PAM = PAD + 0.4(PAS-PAD)')
     st.latex(r'ePWV_{ARG}=0.180526+0.916427\log_{10}(edad)+0.010667edad+0.000396061edad^2+0.133136sexo_M+0.043184PAM')
@@ -221,3 +222,6 @@ with tabs[4]:
     st.warning('No hay validación externa, no se ha confirmado que 1.772 registros representen personas independientes. El error es mayor en mayores de 70 años. No utilizar para diagnóstico o decisiones clínicas independientes.')
     st.markdown("**Taxonomía exploratoria de patrones:** se comparan las tres estimaciones con P50, P90 y P95 de Díaz (medida real) para misma edad y sexo. Solo la VOP TONOMÉTRICA se interpreta normativamente. Concordancia de bandas estimadas no prueba rigidez real, y el margen de dispersión 1 m/s es arbitrario.")
     st.caption('Díaz A, Zócalo Y, Bia D et al. J Clin Hypertens. 2018;20:659–671. DOI: 10.1111/jch.13251.')
+
+with tabs[3]:
+    render_concordance()
