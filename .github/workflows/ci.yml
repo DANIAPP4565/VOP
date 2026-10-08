@@ -1,0 +1,25 @@
+name: VOP ARG · pruebas de cálculo y dashboard
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener repositorio
+        uses: actions/checkout@v4
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+      - name: Comprobar sintaxis
+        run: python -m compileall -q .
+      - name: Probar motor, PDF y gráficos
+        run: python -m pytest -q
