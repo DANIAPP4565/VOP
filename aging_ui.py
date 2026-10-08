@@ -223,7 +223,7 @@ def _patient_hero(r,a,lower,upper):
 
 def _demo_record():
     from engine import calculate
-    return calculate(55,'Masculino',125,75,8.7)
+    return calculate(55,'Masculino',125,75,10.2)
 
 
 def render():
