@@ -60,3 +60,15 @@ En bases CSV/XLSX se agregan columnas de patrones, gráfico apilado por modelo, 
 ## Estado de validación del módulo de patrones
 
 El nuevo módulo agrega una **categorización comparativa exploratoria**, sin validación clínica propia, realizada sobre coeficientes históricos del trabajo metodológico de octubre 2026. **No equipara VOP medida a ePWV**. Es imprescindible validar clasificación, concordancia y relevancia prospectiva en una cohorte independiente antes de incorporarlo a informes diagnósticos.
+
+## 🔬 Módulo P90/P95 de concordancia (v3)
+
+La pestaña **«Rigidez medida y concordancia»** agrega tres análisis separados:
+
+1. **Elevación referencial de VOP medida:** VOP tonométrica carótido-femoral ≥P90 o ≥P95 de Díaz (2018) ajustado por edad/sexo; por debajo, elevado respecto del percentil, o **no evaluable** sin medición. No es por sí sola diagnóstico de enfermedad vascular.
+2. **Acuerdo entre modelos estimados:** contrasta aritméticamente ePWV ARG 2026, ePWV Europa sana y ePWV Europa factores de riesgo con los mismos umbrales; cuenta **0/3 a 3/3**, consenso 3/3, porcentaje de acuerdo por pares y kappa binaria cuando existe variabilidad suficiente. Las ePWV NO adquieren percentiles clínicos validados por esta operación.
+3. **Discordancia medida–estimada:** identifica elevación medida no señalada por los tres modelos, detectada parcialmente o por todos, y alertas estimadas sin elevación medida. Calcula errores firmados y absolutos, tablas 2×2, sensibilidad y especificidad **exclusivamente frente a la etiqueta referencial medida**, no frente a un diagnóstico, daño orgánico ni pronóstico.
+
+Selector P90/P95 y **margen descriptivo configurable** (1 m/s por defecto). Gráficos, grupos etarios y sexo, matrices, exportación CSV y PDF individual. Las métricas de concordancia con VOP medida excluyen los registros sin tonometría; porcentajes con denominador nulo quedan sin calcular.
+
+**Limitaciones:** estas etiquetas y métricas son descriptivas y no constituyen validación externa, decisiones clínicas ni un nuevo punto de corte diagnóstico. El análisis en Streamlit público debe realizarse solo con datos **desidentificados**, sin nombres o DNI. Para material sensible, ejecutar localmente.
