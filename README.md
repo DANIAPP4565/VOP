@@ -110,3 +110,21 @@ Permite **análisis de sensibilidad P5/P95**. Esta clasificación por percentile
 `python -m pytest -q` (30 pruebas del motor, incluyendo P10/P90, P5/P95, caso sin medición, matriz 3x3 y cohortes sintéticas).
 
 **Advertencia de desarrollo:** el código está preparado para Streamlit Community Cloud; al generar esta versión se pudieron ejecutar las pruebas del motor, pero **no fue posible instalar Streamlit en este entorno sin conexión a PyPI**. El arranque real de la interfaz debe confirmarse al desplegarlo en Streamlit.
+
+
+## v5 · Interfaz gráfica profesional y dashboard EVA (octubre 2026)
+
+La pestaña de apertura es **«Dashboard EVA»**. Incluye un **caso demostrativo ficticio** claramente identificado hasta que se ingrese un paciente real en «Paciente».
+
+- Tarjeta de resultado de alto contraste: **EVA / Saludable-esperado / SUPERNOVA** por **VOP carótido-femoral realmente medida**. Si falta tonometría, indica **NO EVALUABLE**, aunque haya tres ePWV estimadas.
+- **Mapa de puntajes Z** con franjas según P10/P90 de Díaz (2018), separando diamante de VOP realmente medida y círculos abiertos de estimaciones **TEÓRICAS — NO VALIDADAS**.
+- **Nomograma edad–VOP de 9 a 87 años** para el sexo informado: curvas percentilares P10, media y P90 (alternativamente P5/P95), punto medido y predicciones con símbolos distintos.
+- **Comparativa horizontal de magnitudes** de tonometría y tres ecuaciones, con diferencias respecto a medición real.
+- **Cohortes anonimizadas**: distribución en porcentaje y recuento de EVA/SUPERNOVA medidos, comparación sobre el MISMO denominador de sujetos con tonometría, matrices 3 × 3 de coincidencia teórica por modelo y distribuciones por edad.
+- **Reporte PDF descargable** y exportación CSV de los perfiles de cohorte. Interfaz responsive, nueva cabecera, indicadores y tablas.
+
+### Alcance clínico y limitaciones
+
+La elección SUPERNOVA <P10; saludable/esperado P10–<P90; EVA ≥P90 es una **taxonomía operativa de investigación**, no un estándar universal ni evidencia de riesgo, salud o edad vascular biológica. Los modelos de ePWV no han sido validados para clasificar estos fenotipos. Las categorías teóricas se diferencian en toda la interfaz de las etiquetas provenientes de VOP medida.
+
+Para desplegar con GitHub: conectar el repositorio a Streamlit Community Cloud usando la rama `main` y el archivo principal `app.py`. **No subir datos identificatorios al repositorio ni a un despliegue público.**
