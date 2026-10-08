@@ -1,4 +1,5 @@
 import io
+from xml.sax.saxutils import escape
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -8,19 +9,21 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from engine import calculate, metrics
+from patterns import evaluate_patterns, MODELS, BAND_ORDER
 
 st.set_page_config(page_title="VOP ARG | Mecánica Vascular",page_icon="🫀",layout="wide")
 st.title("🫀 VOP ARG · Estimación y validación")
 st.caption("Modelo candidato argentino (2026) · ecuaciones europeas · referencias de Díaz et al. (2018)")
 st.warning("Herramienta de investigación, sin validación externa. No reemplaza la VOP cf medida ni establece diagnósticos.")
-tabs=st.tabs(["🧮 Paciente","📂 Base de datos","📊 Validación","📚 Metodología"])
+tabs=st.tabs(["🧮 Paciente","📂 Base de datos","🧬 Patrones por modelos","📊 Validación","📚 Metodología"])
 def pdf_report(r):
     out=io.BytesIO(); doc=SimpleDocTemplate(out,pagesize=A4); styles=getSampleStyleSheet()
     story=[Paragraph("VOP ARG - Informe exploratorio",styles['Title']),Spacer(1,16),
        Paragraph("Sin validación externa. No sustituye tonometría ni diagnóstico clínico.",styles['BodyText']),Spacer(1,14)]
     for k,v in r.items():
-        if v is not None: story.append(Paragraph(f"{k}: {v:.3f}" if isinstance(v,(int,float)) else f"{k}: {v}", styles["BodyText"]))
+        if v is not None: story.append(Paragraph(escape(f"{k}: {v:.3f}" if isinstance(v,(int,float)) else f"{k}: {v}"), styles["BodyText"]))
     story += [Spacer(1,16),Paragraph("Díaz et al. J Clin Hypertens. 2018;20:659-671; doi:10.1111/jch.13251",styles["BodyText"])]
+    story.append(Spacer(1,12));story.append(Paragraph("Advertencia: para ePWV, las bandas se basan en un contraste numérico con umbrales de VOP medida de Díaz. No representan percentiles de ePWV validados ni diagnósticos.",styles["BodyText"]))
     doc.build(story);return out.getvalue()
 
 with tabs[0]:
@@ -55,6 +58,21 @@ with tabs[0]:
         if r['VOP_medida'] is not None:
             st.info(f"Percentil de VOP MEDIDA: P{r['Percentil_medida']:.1f} | Z {r['Z_medida']:.2f} | Error argentina {r['Error_ARG']:+.2f} m/s")
         else: st.info("Percentil de VOP medida no disponible sin tonometría.")
+        st.markdown("#### Patrones de rigidez referencial por ecuación")
+        st.caption("Las bandas de ePWV representan una comparación NUMÉRICA con valores de VOP MEDIDA de Díaz; no son percentiles clínicos de ePWV ni un diagnóstico.")
+        rows=[{"Fuente":lab,"VOP (m/s)":r[key],"Banda vs Díaz":r[band]}
+              for key,lab,band in MODELS]
+        if r["VOP_medida"] is not None:
+            rows.append({"Fuente":"VOP cf realmente medida","VOP (m/s)":r["VOP_medida"],"Banda vs Díaz":r["Banda_VOP_medida_Diaz"]})
+        st.dataframe(pd.DataFrame(rows).round(2),hide_index=True,use_container_width=True)
+        k1,k2,k3=st.columns(3)
+        k1.metric("Europa sana – Argentina",f'{r["Delta_Europa_sana_menos_ARG_m_s"]:+.2f} m/s')
+        k2.metric("Europa FR – Argentina",f'{r["Delta_Europa_riesgo_menos_ARG_m_s"]:+.2f} m/s')
+        k3.metric("Amplitud de 3 modelos",f'{r["Amplitud_entre_modelos_m_s"]:.2f} m/s')
+        if r["VOP_medida"] is not None:
+            st.info(f'Patrón medido: **{r["Banda_VOP_medida_Diaz"]}**. **{r["Patron_ajuste_con_medida"]}**. Modelo más próximo: {r["Modelo_mas_cercano_medida"]}.')
+        else:
+            st.info("No se puede determinar patrón de rigidez medido sin tonometría.")
         st.download_button('Informe PDF individual',pdf_report(r),file_name='vop_arg_informe.pdf',mime='application/pdf')
 with tabs[1]:
     st.subheader("Carga de CSV / XLSX")
@@ -103,6 +121,71 @@ with tabs[1]:
             st.download_button('Resultados CSV',data.to_csv(index=False,sep=';',decimal=',').encode('utf-8-sig'),'resultados_vop_arg.csv')
         if not bad.empty: st.dataframe(bad,use_container_width=True)
 with tabs[2]:
+    st.subheader("Patrones de rigidez vascular referencial por modelos")
+    st.warning("La clasificación de VOP cf MEDIDA utiliza referencias de Díaz por edad/sexo. Aplicar bandas normativas de VOP medida a ePWV estimadas es un CONTRASTE DESCRIPTIVO, sin validación clínica.")
+    st.markdown("Bandas: **<P50**, **P50–<P90**, **P90–<P95**, **≥P95**. P50 corresponde aproximadamente a la media de Díaz (modelo normal).")
+    margin=st.slider("Margen de discrepancia exploratorio (m/s). No es punto de corte clínico.",0.0,3.0,1.0,0.1)
+    result=st.session_state.get("result")
+    if result:
+        p=evaluate_patterns(result,tolerance=margin)
+        st.markdown("#### Patrón individual")
+        st.info(f'Argentina: **{p["Banda_ARG_vs_Diaz"]}** | Europa sana: **{p["Banda_Europa_sana_vs_Diaz"]}** | Europa con factores: **{p["Banda_Europa_riesgo_vs_Diaz"]}** — {p["Patron_modelos"]}.')
+        st.write(f'Europa sana – Argentina: **{p["Delta_Europa_sana_menos_ARG_m_s"]:+.2f} m/s**; Europa FR – Argentina: **{p["Delta_Europa_riesgo_menos_ARG_m_s"]:+.2f} m/s**; dispersión máxima: **{p["Amplitud_entre_modelos_m_s"]:.2f} m/s**.')
+        if p["Discrepancia_supera_margen"]:
+            st.warning("Las estimaciones difieren más que el margen descriptivo seleccionado.")
+        else:
+            st.success("Las estimaciones están dentro del margen descriptivo seleccionado.")
+        if result.get("VOP_medida") is not None:
+            st.info(f'Medida: **{p["Banda_VOP_medida_Diaz"]}**. {p["Patron_ajuste_con_medida"]}.')
+    data=st.session_state.get("batch")
+    if not isinstance(data,pd.DataFrame) or data.empty:
+        st.info("Cargue una base para estudiar distribución de patrones y diferencias según edad.")
+    else:
+        st.markdown("#### Bandas por modelo en la cohorte cargada")
+        counts=[]
+        names=[("Banda_ARG_vs_Diaz","Argentina"),("Banda_Europa_sana_vs_Diaz","Europa sana"),
+               ("Banda_Europa_riesgo_vs_Diaz","Europa con FR")]
+        for field,label in names:
+            for band in BAND_ORDER:
+                counts.append({"Modelo":label,"Banda":band,"N":int((data[field]==band).sum())})
+        fig=px.bar(pd.DataFrame(counts),x="Modelo",y="N",color="Banda",
+                   category_orders={"Banda":list(BAND_ORDER)},barmode="stack",
+                   title="Posición numérica de las estimaciones respecto a referencias medidas")
+        st.plotly_chart(fig,use_container_width=True)
+        c1,c2,c3=st.columns(3)
+        c1.metric("Bandas discordantes",str(int((data["Patron_modelos"]=="Bandas discordantes").sum())))
+        c2.metric(f"Amplitud >{margin:.1f} m/s",f'{(data["Amplitud_entre_modelos_m_s"]>margin).mean()*100:.1f}%')
+        c3.metric("Amplitud mediana",f'{data["Amplitud_entre_modelos_m_s"].median():.2f} m/s')
+        diffs=pd.concat([
+            data[["Edad","Delta_Europa_sana_menos_ARG_m_s"]].rename(columns={"Delta_Europa_sana_menos_ARG_m_s":"Diferencia"}).assign(Contraste="Europa sana – Argentina"),
+            data[["Edad","Delta_Europa_riesgo_menos_ARG_m_s"]].rename(columns={"Delta_Europa_riesgo_menos_ARG_m_s":"Diferencia"}).assign(Contraste="Europa FR – Argentina"),
+        ],ignore_index=True)
+        fig=px.scatter(diffs,x="Edad",y="Diferencia",color="Contraste",opacity=0.4,
+                       title="Diferencias de estimación por edad (m/s)")
+        fig.add_hline(y=0,line_color="#888888")
+        st.plotly_chart(fig,use_container_width=True)
+        bands=[]
+        for lab,lo,hi in [("9–20",9,21),("21–39",21,40),("40–59",40,60),("60–69",60,70),("≥70",70,88)]:
+            part=data[(data["Edad"]>=lo)&(data["Edad"]<hi)]
+            if len(part):
+                bands.append({"Edad":lab,"N":len(part),
+                    "Delta sana – ARG (m/s)":part["Delta_Europa_sana_menos_ARG_m_s"].mean(),
+                    "Delta FR – ARG (m/s)":part["Delta_Europa_riesgo_menos_ARG_m_s"].mean(),
+                    "Bandas discordantes (%)":100*(part["Patron_modelos"]=="Bandas discordantes").mean()})
+        st.dataframe(pd.DataFrame(bands).round(2),hide_index=True,use_container_width=True)
+        paired=data.dropna(subset=["VOP_medida"])
+        if not paired.empty:
+            st.markdown("#### Con VOP medida: concordancia frente a referencia real")
+            st.dataframe(paired["Patron_ajuste_con_medida"].value_counts().rename_axis("Patrón").reset_index(name="N"),
+                         hide_index=True,use_container_width=True)
+            for field,label in names:
+                with st.expander("Tabla cruzada de bandas: medida vs " + label):
+                    ct=pd.crosstab(pd.Categorical(paired["Banda_VOP_medida_Diaz"],categories=BAND_ORDER),
+                        pd.Categorical(paired[field],categories=BAND_ORDER),dropna=False)
+                    ct.index.name="VOP medida";ct.columns.name="Modelo estimado"
+                    st.dataframe(ct,use_container_width=True)
+        st.caption("Ninguna banda de estimación se debe interpretar como diagnóstico. Las discrepancias se computan como Europa menos Argentina.")
+with tabs[3]:
     st.subheader("Validación con VOP medida")
     if 'batch' not in st.session_state: st.info('Cargue una base con VOP medida en la pestaña anterior.')
     else:
@@ -129,11 +212,12 @@ with tabs[2]:
                 c2.plotly_chart(fig,use_container_width=True)
                 st.plotly_chart(px.scatter(plot,x='Edad',y='Diferencia',title='Sesgo por edad'),use_container_width=True)
             else:st.info('Rango etario sin pares suficientes.')
-with tabs[3]:
+with tabs[4]:
     st.subheader('Fundamento científico y limitaciones')
     st.latex(r'PAM = PAD + 0.4(PAS-PAD)')
     st.latex(r'ePWV_{ARG}=0.180526+0.916427\log_{10}(edad)+0.010667edad+0.000396061edad^2+0.133136sexo_M+0.043184PAM')
     st.markdown('**ePWV argentina candidata:** ajuste Ridge (alpha=10); validación cruzada interna de 10 particiones, RMSE 1,031 m/s, MAE 0,762 m/s, R² 0,595 documentados previamente.')
     st.markdown('**Referencias de Díaz:** percentiles de VOP cf **medida**, calculados por media y DE según edad y sexo; no son predicciones de ePWV individual.')
     st.warning('No hay validación externa, no se ha confirmado que 1.772 registros representen personas independientes. El error es mayor en mayores de 70 años. No utilizar para diagnóstico o decisiones clínicas independientes.')
+    st.markdown("**Taxonomía exploratoria de patrones:** se comparan las tres estimaciones con P50, P90 y P95 de Díaz (medida real) para misma edad y sexo. Solo la VOP TONOMÉTRICA se interpreta normativamente. Concordancia de bandas estimadas no prueba rigidez real, y el margen de dispersión 1 m/s es arbitrario.")
     st.caption('Díaz A, Zócalo Y, Bia D et al. J Clin Hypertens. 2018;20:659–671. DOI: 10.1111/jch.13251.')
