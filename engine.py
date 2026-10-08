@@ -1,6 +1,7 @@
 import math
 from statistics import NormalDist
 import numpy as np
+from patterns import evaluate_patterns
 
 def sex_code(sex):
     s=str(sex).lower().strip()
@@ -29,13 +30,15 @@ def calculate(age,sex,pas,pad,measured=None):
     if sd<=0: raise ValueError('DE normativa no válida')
     normal=NormalDist()
     z=(measured-mu)/sd if measured is not None else None
-    return {'Edad':age,'Sexo':'Masculino' if male else 'Femenino','PAS':pas,'PAD':pad,'PAM':pam,
+    out = {'Edad':age,'Sexo':'Masculino' if male else 'Femenino','PAS':pas,'PAD':pad,'PAM':pam,
         'ePWV_ARG':arg,'ePWV_Europa_sana':europe,'ePWV_Europa_riesgo':euro_risk,
         'Diaz_media':mu,'Diaz_DE':sd,'Diaz_P90':mu+normal.inv_cdf(.9)*sd,
         'Diaz_P95':mu+normal.inv_cdf(.95)*sd,'VOP_medida':measured,'Z_medida':z,
         'Percentil_medida':100*normal.cdf(z) if z is not None else None,
         'Error_ARG':arg-measured if measured is not None else None,
         'Error_Europa':europe-measured if measured is not None else None}
+    out.update(evaluate_patterns(out))
+    return out
 
 def metrics(obs,pred):
     y=np.asarray(obs,float); p=np.asarray(pred,float); mask=np.isfinite(y)&np.isfinite(p)
