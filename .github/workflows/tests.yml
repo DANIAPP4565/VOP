@@ -17,6 +17,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pytest
       - name: Verificar sintaxis
-        run: python -m compileall -q app.py engine.py patterns.py tests
+        run: python -m compileall -q app.py engine.py patterns.py concordance.py concordance_ui.py tests
       - name: Pruebas unitarias
         run: python -m pytest -q
