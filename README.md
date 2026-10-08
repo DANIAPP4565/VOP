@@ -49,7 +49,7 @@ La app implementa coeficientes del informe *«Modelo candidato argentino para es
 
 Proyecto de investigación de mecánica vascular. Dr. Ricardo Daniel Olano, especialista en Cardiología e Hipertensión Arterial.
 
-## Nuevo módulo · Patrones de rigidez referencial (v2)
+## Módulo técnico heredado: bandas de magnitud (v2)
 
 El módulo **«Patrones por modelos»** compara cada ePWV estimada (Argentina, Europa sana y Europa factores de riesgo) con los valores de referencia **P50 aproximado, P90 y P95 de Díaz (2018)** para la misma edad y sexo. Las bandas son `<P50`, `P50–<P90`, `P90–<P95` y `≥P95`. **En una ePWV, estar por encima de P90 NO equivale a un percentil de VOP medida ni diagnostica rigidez patológica.** Las bandas de estimación son una comparación aritmética exploratoria con la distribución normativa de VOP cf real; se indican explícitamente como tales en pantalla.
 
@@ -61,14 +61,52 @@ En bases CSV/XLSX se agregan columnas de patrones, gráfico apilado por modelo, 
 
 El nuevo módulo agrega una **categorización comparativa exploratoria**, sin validación clínica propia, realizada sobre coeficientes históricos del trabajo metodológico de octubre 2026. **No equipara VOP medida a ePWV**. Es imprescindible validar clasificación, concordancia y relevancia prospectiva en una cohorte independiente antes de incorporarlo a informes diagnósticos.
 
-## 🔬 Módulo P90/P95 de concordancia (v3)
+## 🔬 Nuevo módulo: rigidez medida y concordancia (v3)
 
-La pestaña **«Rigidez medida y concordancia»** agrega tres análisis separados:
+Pestaña «Rigidez medida y concordancia»:
 
-1. **Elevación referencial de VOP medida:** VOP tonométrica carótido-femoral ≥P90 o ≥P95 de Díaz (2018) ajustado por edad/sexo; por debajo, elevado respecto del percentil, o **no evaluable** sin medición. No es por sí sola diagnóstico de enfermedad vascular.
-2. **Acuerdo entre modelos estimados:** contrasta aritméticamente ePWV ARG 2026, ePWV Europa sana y ePWV Europa factores de riesgo con los mismos umbrales; cuenta **0/3 a 3/3**, consenso 3/3, porcentaje de acuerdo por pares y kappa binaria cuando existe variabilidad suficiente. Las ePWV NO adquieren percentiles clínicos validados por esta operación.
-3. **Discordancia medida–estimada:** identifica elevación medida no señalada por los tres modelos, detectada parcialmente o por todos, y alertas estimadas sin elevación medida. Calcula errores firmados y absolutos, tablas 2×2, sensibilidad y especificidad **exclusivamente frente a la etiqueta referencial medida**, no frente a un diagnóstico, daño orgánico ni pronóstico.
+1. **Elevación referencial de VOP medida**: compara la tonometría real con el P90 o P95 de Díaz 2018 (ajuste por edad y sexo) y separa «sin medición» de «por debajo del umbral». Es una posición referencial, **no** equivale a diagnosticar daño de órgano blanco o enfermedad vascular.
+2. **Concordancia entre las tres ePWV**: cuántos modelos presentan una estimación numéricamente ≥ al mismo umbral (0 a 3), consenso 3/3 y acuerdos par a par con estadístico kappa binario cuando está definido. Los umbrales de VOP medida no constituyen percentiles validados para las estimaciones.
+3. **Discordancia medida–estimada**: describe elevaciones medidas no señaladas por ninguno, señaladas por uno/dos/tres, y alertas estimadas sin elevación real medida. Calcula diferencias firmadas, error absoluto, tablas descriptivas 2×2 (VP, FN, FP, VN), acuerdo, sensibilidad y especificidad *respecto de la etiqueta referencial medida*; no representan validación diagnóstica ni pronóstica.
+4. **Auditoría por cohorte**: matrices, gráficos, recuentos y análisis por edad/sexo; exporta CSV y un PDF individual con los resultados y advertencias.
 
-Selector P90/P95 y **margen descriptivo configurable** (1 m/s por defecto). Gráficos, grupos etarios y sexo, matrices, exportación CSV y PDF individual. Las métricas de concordancia con VOP medida excluyen los registros sin tonometría; porcentajes con denominador nulo quedan sin calcular.
+Selector de **P90/P95** y margen aritmético configurable (por defecto 1 m/s; NO es umbral clínico). El numerador/denominador de sensibilidad y especificidad incluye solo pares con **VOP medida**. Si no hay pares, los indicadores no se calculan; si no existe un denominador válido, se presentan en blanco. Las matrices se generan sobre la muestra cargada y no prueban transportabilidad a otras poblaciones.
 
-**Limitaciones:** estas etiquetas y métricas son descriptivas y no constituyen validación externa, decisiones clínicas ni un nuevo punto de corte diagnóstico. El análisis en Streamlit público debe realizarse solo con datos **desidentificados**, sin nombres o DNI. Para material sensible, ejecutar localmente.
+> **Privacidad:** la subida de bases a Streamlit Cloud procesa los datos en un servidor externo. Elimine DNI, nombres y cualquier dato identificatorio antes de subirlos. Es recomendable correr la aplicación localmente para investigación con información sensible. Los archivos cargados no se publican en GitHub automáticamente.
+
+
+## v4 — FENOTIPOS CORRECTOS DE ENVEJECIMIENTO VASCULAR
+
+**Nueva pestaña central: `🧬 EVA · Saludable · SUPERNOVA`.**
+
+Criterio operativo **exploratorio por percentiles de VOP carótido-femoral realmente medida**, con distribución argentina ajustada por edad y sexo de Díaz et al. (2018):
+
+| Fenotipo | Rango de VOP **medida** | Alcance |
+| --- | --- | --- |
+| **SUPERNOVA** | < P10 | Rigidez inusualmente baja respecto de referencia saludable de su edad y sexo |
+| **Saludable / esperado** | ≥ P10 y < P90 | VOP medida dentro de la banda de referencia operacional, NO garantiza ausencia de enfermedad |
+| **EVA** | ≥ P90 | Rigidez por encima del límite superior referencial seleccionado, sugerente de envejecimiento acelerado |
+
+Permite **análisis de sensibilidad P5/P95**. Esta clasificación por percentiles es un **marco operativo para investigación**, no la fórmula de edad vascular de Bruno et al. (2020), que utiliza diferencia entre edad vascular estimada y cronológica. No existe definición EVA/SUPERNOVA estandarizada universalmente ni equivalencia demostrada de HVA referencial con ausencia de riesgo cardiovascular.
+
+**Regla de seguridad:** sin tonometría real, `Fenotipo_VOP_medida = None` (**NO EVALUABLE**). La app **no** asigna EVA/Saludable/SUPERNOVA clínica desde ePWV derivada de edad y PAM; cuando se compara ePWV con percentiles Díaz, el campo se denomina **fenotipo TEÓRICO/simulado, NO VALIDADO**.
+
+### Funciones nuevas
+
+- Muestra en el paciente los tres fenotipos de referencia, sus umbrales P10/P90 individuales, el fenotipo de la medición, y la comparación teórica de tres estimadores (ARG, Europa sana, Europa con factores de riesgo).
+- Resalta coincidencia categórica **3/3, parcial (1/3 o 2/3), 0/3** y error firmado/absoluto cuando hay tonometría real.
+- Genera informes PDF individuales con etiquetas de **medición real vs simulación**, tablas comparativas y advertencias.
+- En cohortes anónimas, produce distribuciones de fenotipos, matrices de confusión de **tres categorías**, kappa nominal, EVA y SUPERNOVA omitidas, errores por edad, y exportaciones CSV.
+- Conserva la pestaña `Auditoría técnica P90/P95` antigua como comparación binaria **secundaria**, sin denominar a sus resultados fenotipos EVA/SUPERNOVA.
+
+### Referencias de los fenotipos
+
+- Díaz A et al. *Reference intervals and percentiles for carotid-femoral pulse wave velocity in a healthy population aged between 9 and 87 years.* J Clin Hypertens. 2018;20:659–671. doi:10.1111/jch.13251.
+- Bruno RM et al. *Early and Supernormal Vascular Aging: Clinical Characteristics and Association With Incident Cardiovascular Events.* Hypertension. 2020;76:1616–1624. doi:10.1161/HYPERTENSIONAHA.120.14971. **Define fenotipos basados en Δ-edad**, NO por la regla P10/P90 aplicada aquí.
+- *Analysis of vascular aging phenotypes in a high cardiovascular risk population*. Sci Rep (2025). Aplicó cfPWV < P10 como SUPERNOVA, entre P10 y P90 normal, y ≥P90 EVA, reconociendo falta de estandarización universal.
+
+### Pruebas automáticas
+
+`python -m pytest -q` (30 pruebas del motor, incluyendo P10/P90, P5/P95, caso sin medición, matriz 3x3 y cohortes sintéticas).
+
+**Advertencia de desarrollo:** el código está preparado para Streamlit Community Cloud; al generar esta versión se pudieron ejecutar las pruebas del motor, pero **no fue posible instalar Streamlit en este entorno sin conexión a PyPI**. El arranque real de la interfaz debe confirmarse al desplegarlo en Streamlit.
