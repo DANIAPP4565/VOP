@@ -26,12 +26,63 @@ from engine import (
 
 st.set_page_config(page_title="VOP ARG | Mecánica vascular", page_icon="🫀", layout="wide")
 st.markdown("""<style>
-.block-container {max-width:1250px; padding-top:1.8rem; padding-bottom:2rem}
-h1,h2,h3 {color:#12304A}
-[data-testid='stMetric'] {background:#EDF5F7; border-left:4px solid #008A80;
-  border-radius:10px; padding:16px}
-div.stButton > button[kind='primary'] {background:#087E77; color:white}
-.smallcap {font-size:0.78rem;letter-spacing:.11em;color:#07867e;font-weight:700}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;600;700;800&display=swap');
+:root { --vop-navy:#142D46; --vop-teal:#087A69; --vop-blue:#2670AD; --vop-red:#BA4E51;
+        --vop-border:#E1E9F0; --vop-muted:#617389; --vop-bg:#F7FAFD; }
+html, body, [class*="css"] { font-family:'DM Sans','Segoe UI',sans-serif; }
+.block-container { max-width:1480px; padding:1.6rem 2.3rem 3rem; }
+h1,h2,h3,div[data-testid="stHeadingWithActionElements"] { font-family:'Manrope','Segoe UI',sans-serif; letter-spacing:-.025em; color:var(--vop-navy); }
+h2{font-size:1.65rem!important} h3{font-size:1.13rem!important}
+[data-testid='stMetric'] { background:#fff; border:1px solid var(--vop-border); border-radius:15px;
+  padding:15px 17px; box-shadow:0 5px 20px rgba(16,44,68,.035); }
+[data-testid='stMetricLabel'] {font-size:.8rem; color:var(--vop-muted);}
+[data-testid='stMetricValue'] { color:var(--vop-navy);font-weight:800;letter-spacing:-.03em;}
+[data-testid='stTabs'] button {font-size:.89rem; font-weight:650; padding:12px 16px; }
+[data-testid='stTabs'] [aria-selected="true"] {color:var(--vop-teal)!important}
+[data-testid='stSidebar'] {background:#F1F6FA}
+[data-testid='stSidebar'] [data-testid='stMetric'] {background:rgba(255,255,255,.8);border-color:#DEE8EF}
+div.stButton > button[kind='primary'] {background:var(--vop-teal);border:1px solid var(--vop-teal);
+ color:white; border-radius:12px; font-weight:750; min-height:45px; }
+div.stButton > button[kind='primary']:hover {background:#05675B;border-color:#05675B}
+[data-testid="stDownloadButton"] button {border-radius:11px;border:1px solid #BED7D7;color:#0B7065;font-weight:700}
+[data-testid="stPlotlyChart"] {border:1px solid var(--vop-border);border-radius:16px;
+ background:white; box-shadow:0 4px 14px rgba(16,44,68,.024);padding:6px;}
+[data-testid="stAlert"] {border-radius:12px;border:1px solid rgba(52,91,113,.10)}
+.smallcap,.vop-section-label {font-size:.74rem;letter-spacing:.14em;color:var(--vop-teal);font-weight:800}
+.vop-head {background:linear-gradient(112deg,#142D46 0%,#1C4460 55%,#157F75 100%);
+ border-radius:20px; padding:25px 30px 24px; margin:0 0 22px; color:#fff; overflow:hidden;
+ box-shadow:0 12px 28px rgba(20,45,70,.13)}
+.vop-head .vop-kicker {color:#A2EDE0;font-size:.73rem;letter-spacing:.15em;font-weight:800}
+.vop-head .vop-title {font-family:Manrope,sans-serif;color:#fff;font-size:2.07rem;font-weight:800;
+ letter-spacing:-.05em;line-height:1.16;margin:9px 0 7px}
+.vop-head p {color:#D8EDF3;margin:0;font-size:.95rem;max-width:820px}
+.vop-panel-title {font-family:Manrope,sans-serif;font-size:1.85rem!important;font-weight:800;
+ margin:6px 0 3px; color:var(--vop-navy)}
+.vop-panel-sub {color:var(--vop-muted);font-size:.98rem;margin-bottom:18px}
+.vop-result{border:1px solid #DCE7EF;border-radius:18px;padding:25px 28px;margin:13px 0 22px;
+ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px; align-items:center;
+ background:linear-gradient(120deg,#fff,#F9FBFD);box-shadow:0 12px 29px rgba(17,48,73,.055)}
+.vop-result.vop-super {border-left:6px solid #087A69}
+.vop-result.vop-eva {border-left:6px solid #BA4E51}
+.vop-result.vop-healthy {border-left:6px solid #2670AD}
+.vop-result.vop-empty {border-left:6px solid #8D9BAB}
+.vop-result .vop-eyebrow {color:#62788D;font-size:.70rem;letter-spacing:.11em;font-weight:800}
+.vop-phenotype{font-family:Manrope,sans-serif;font-weight:800;line-height:1.2;font-size:1.8rem;
+ letter-spacing:-.045em; margin:10px 0 9px;color:#142D46}
+.vop-phenotype .vop-symbol{font-size:1.18rem;vertical-align:3px;margin-right:9px}
+.vop-super .vop-symbol{color:#087A69}.vop-healthy .vop-symbol{color:#2670AD}.vop-eva .vop-symbol{color:#BA4E51}
+.vop-desc {font-size:.91rem;color:#66798B;line-height:1.6;max-width:680px}
+.vop-tag{display:inline-block;background:#E9F1F5;color:#3A5770;border-radius:20px;
+ padding:7px 12px;margin-top:14px;font-size:.68rem;letter-spacing:.07em;font-weight:800}
+.vop-value{text-align:right;padding-left:16px;border-left:1px solid #E6ECF1;min-width:205px}
+.vop-val-label{font-size:.71rem;color:#6C7C8B;letter-spacing:.1em;font-weight:800}
+.vop-big{font:800 2.85rem Manrope,sans-serif;color:#142D46;letter-spacing:-.06em;white-space:nowrap;line-height:1.25}
+.vop-big small{font-size:.87rem;letter-spacing:0;color:#78899A}
+.vop-percentile{font-weight:700;font-size:.83rem;color:#537087}
+@media(max-width:800px){.block-container{padding:1rem .85rem 2rem}.vop-head{padding:23px 20px;border-radius:15px}
+ .vop-head .vop-title{font-size:1.68rem}.vop-result{display:block;padding:22px 18px}
+ .vop-value{border-left:0;border-top:1px solid #E6ECF1;text-align:left;margin-top:20px;padding:16px 0 0;min-width:0}
+ .vop-big{font-size:2.4rem}.vop-phenotype{font-size:1.45rem}.vop-panel-title{font-size:1.44rem!important}}
 </style>""", unsafe_allow_html=True)
 
 
@@ -148,9 +199,7 @@ def show_audit_table(data: pd.DataFrame):
     return rows
 
 
-st.markdown('<div class="smallcap">UNIDAD DE MECÁNICA VASCULAR · HERRAMIENTA DE INVESTIGACIÓN</div>', unsafe_allow_html=True)
-st.title("🫀 VOP ARG · Estimación y validación")
-st.caption("Modelo argentino candidato (2026) + ecuaciones europeas + percentiles de Díaz y cols. (2018)")
+st.markdown('<header class="vop-head">\n<div class="vop-kicker">UNIDAD DE MECÁNICA VASCULAR · INVESTIGACIÓN</div>\n<div class="vop-title">VOP ARG <span style="color:#8AE2D4">/</span> Envejecimiento vascular</div>\n<p>Fenotipos EVA · Saludable · SUPERNOVA · VOP carótido-femoral medida y modelos de estimación Argentina / Europa.</p>\n</header>', unsafe_allow_html=True)
 st.warning("**Uso de investigación:** modelo argentino con validación interna solamente. No diagnostica rigidez arterial ni reemplaza la VOP carótido-femoral tonométrica.",icon="⚠️")
 
 with st.sidebar:
@@ -164,8 +213,8 @@ with st.sidebar:
     st.markdown("---")
     st.caption(MODEL_VERSION)
 
-tab_ind, tab_lotes, tab_pat, tab_conf, tab_val, tab_met = st.tabs([
-    "🧮 Paciente", "📂 Carga masiva", "🧬 EVA · Saludable · SUPERNOVA",
+tab_pat, tab_ind, tab_lotes, tab_conf, tab_val, tab_met = st.tabs([
+    "📈 Dashboard EVA", "🧮 Paciente", "📂 Carga masiva",
     "🔬 Auditoría técnica P90/P95", "📊 Validación", "📚 Metodología"])
 
 with tab_ind:
